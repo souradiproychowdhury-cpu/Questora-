@@ -3,6 +3,7 @@ dotenv.config({ path: '.env.local' });
 dotenv.config(); // also load .env as fallback
 
 import express, { Request, Response, NextFunction } from 'express';
+import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
@@ -701,9 +702,33 @@ async function startServer() {
     app.use(vite.middlewares);
   } else {
     const distPath = path.resolve(process.cwd(), 'dist');
-    app.use(express.static(distPath));
+    const distIndex = path.join(distPath, 'index.html');
+    const rootIndex = path.resolve(process.cwd(), 'index.html');
+
+    // If dist folder or dist/index.html is missing, build it automatically
+    if (!fs.existsSync(distIndex)) {
+      console.warn(`[WARN] ${distIndex} not found. Attempting automatic build...`);
+      try {
+        const { execSync } = await import('child_process');
+        execSync('npm run build', { stdio: 'inherit', cwd: process.cwd() });
+      } catch (buildErr) {
+        console.error('[BUILD ERROR] Auto-build failed, will fallback to root index.html:', buildErr);
+      }
+    }
+
+    if (fs.existsSync(distPath)) {
+      app.use(express.static(distPath));
+    }
+    app.use(express.static(process.cwd()));
+
     app.get('*', (req: Request, res: Response) => {
-      res.sendFile(path.join(distPath, 'index.html'));
+      if (fs.existsSync(distIndex)) {
+        return res.sendFile(distIndex);
+      }
+      if (fs.existsSync(rootIndex)) {
+        return res.sendFile(rootIndex);
+      }
+      return res.status(404).send('Application index.html not found. Please ensure project is built.');
     });
   }
 
