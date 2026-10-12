@@ -726,6 +726,9 @@
             <button type="button" class="creator-pill-btn" data-target="docs-view">
               <i class="fa-solid fa-file-word text-sky-400"></i> AI Docs
             </button>
+            <button type="button" class="creator-pill-btn" data-target="sandbox-view">
+              <i class="fa-solid fa-laptop-code text-emerald-400"></i> AI App Sandbox
+            </button>
           </div>
         </div>
 
@@ -852,6 +855,59 @@
                   <i class="fa-solid fa-file-lines text-4xl text-gray-600 mb-2"></i>
                   <span>Click "Format Professional Report" to build a structured project doc</span>
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB PANEL 5: AI App Sandbox -->
+        <div id="panel-sandbox-view" class="creator-tab-panel hidden">
+          <div class="ai-creator-card">
+            <div class="creator-card-header">
+              <h3>💻 AI App Builder Sandbox</h3>
+              <p>Build fully operational, single-file HTML/CSS/JS apps with Gemini, run them instantly in a live preview sandbox, and download them!</p>
+            </div>
+            <div class="creator-card-body">
+              <form id="app-builder-form" class="creator-inline-form">
+                <input type="text" id="app-builder-input" placeholder="What app do you want to build? (e.g. Pomodoro timer, reaction speed game...)" required />
+                <button type="submit" id="btn-build-app" class="btn-creator-action">
+                  <i class="fa-solid fa-laptop-code"></i> Build App
+                </button>
+              </form>
+              
+              <div id="sandbox-loading-indicator" class="sandbox-loading-indicator hidden">
+                <i class="fa-solid fa-circle-nodes fa-spin text-emerald-400 text-3xl mb-2"></i>
+                <span>Gemini is drafting app components and scripting animations...</span>
+              </div>
+
+              <div id="sandbox-workspace" class="sandbox-workspace hidden">
+                <!-- Tabs for Editor vs Live Preview -->
+                <div class="sandbox-header-tabs">
+                  <button type="button" class="sandbox-tab-btn active" data-tab="preview">
+                    <i class="fa-solid fa-play text-emerald-400"></i> Live Interactive Run
+                  </button>
+                  <button type="button" class="sandbox-tab-btn" data-tab="code">
+                    <i class="fa-solid fa-code text-sky-400"></i> View Source Code
+                  </button>
+                  <button type="button" id="btn-download-app-html" class="sandbox-action-btn ml-auto">
+                    <i class="fa-solid fa-download"></i> Download App HTML
+                  </button>
+                </div>
+
+                <!-- Preview Pane -->
+                <div id="sandbox-preview-pane" class="sandbox-pane">
+                  <iframe id="sandbox-iframe" sandbox="allow-scripts allow-modals"></iframe>
+                </div>
+
+                <!-- Code Pane -->
+                <div id="sandbox-code-pane" class="sandbox-pane hidden">
+                  <textarea id="sandbox-code-textarea" readonly></textarea>
+                </div>
+              </div>
+
+              <div id="sandbox-placeholder-box" class="sandbox-placeholder-box">
+                <i class="fa-solid fa-box-archive text-4xl text-gray-600 mb-2"></i>
+                <span>Type any app name or description above to build and test it instantly</span>
               </div>
             </div>
           </div>

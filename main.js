@@ -1523,6 +1523,19 @@
   const docsPreviewArea = document.getElementById('docs-preview-area');
   const docsPlaceholderBox = document.getElementById('docs-placeholder-box');
 
+  // AI App Sandbox references
+  const appBuilderForm = document.getElementById('app-builder-form');
+  const appBuilderInput = document.getElementById('app-builder-input');
+  const sandboxLoadingIndicator = document.getElementById('sandbox-loading-indicator');
+  const sandboxWorkspace = document.getElementById('sandbox-workspace');
+  const sandboxTabBtns = document.querySelectorAll('.sandbox-tab-btn');
+  const sandboxPanes = document.querySelectorAll('.sandbox-pane');
+  const sandboxIframe = document.getElementById('sandbox-iframe');
+  const sandboxCodeTextarea = document.getElementById('sandbox-code-textarea');
+  const btnDownloadAppHtml = document.getElementById('btn-download-app-html');
+  const sandboxPlaceholderBox = document.getElementById('sandbox-placeholder-box');
+  let currentSandboxCode = '';
+
   // AI Creator State tracking
   let currentSlides = [];
   let currentSlideIndex = 0;
@@ -1886,6 +1899,15 @@
     }
     if (docsPlaceholderBox) docsPlaceholderBox.classList.remove('hidden');
     if (btnDownloadWord) btnDownloadWord.classList.add('hidden');
+
+    // Reset Sandbox state
+    currentSandboxCode = '';
+    if (appBuilderInput) appBuilderInput.value = '';
+    if (sandboxWorkspace) sandboxWorkspace.classList.add('hidden');
+    if (sandboxPlaceholderBox) sandboxPlaceholderBox.classList.remove('hidden');
+    if (sandboxLoadingIndicator) sandboxLoadingIndicator.classList.add('hidden');
+    if (sandboxIframe) sandboxIframe.srcdoc = '';
+    if (sandboxCodeTextarea) sandboxCodeTextarea.value = '';
   }
 
   // Trigger Local File Downloads
@@ -2538,6 +2560,91 @@ ${markdownContent || `Topic: ${query}`}`,
         btnDownloadWord.disabled = false;
         btnDownloadWord.innerHTML = '<i class="fa-solid fa-file-word text-sky-400"></i> Download Word (.docx)';
       }
+    });
+  }
+
+  // 💻 AI App Sandbox (Build any Web App)
+  if (appBuilderForm) {
+    appBuilderForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const appDesc = appBuilderInput ? appBuilderInput.value.trim() : '';
+      if (!appDesc) return;
+
+      if (sandboxPlaceholderBox) sandboxPlaceholderBox.classList.add('hidden');
+      if (sandboxWorkspace) sandboxWorkspace.classList.add('hidden');
+      if (sandboxLoadingIndicator) sandboxLoadingIndicator.classList.remove('hidden');
+
+      try {
+        const response = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            message: `Build a beautiful, interactive, fully functioning single-file HTML/CSS/JS web application for: "${appDesc}".
+Guidelines:
+- It must be fully self-contained in a single file with <style> block and inline JavaScript.
+- Use Tailwind CSS by importing "<script src='https://cdn.tailwindcss.com'></script>" in the head.
+- Ensure all interactive scripts work perfectly with self-contained logic.
+- Output ONLY the raw HTML code. Do not wrap in markdown quotes, backticks, or comment wrappers.`,
+            history: []
+          })
+        });
+
+        if (!response.ok) {
+           const errorData = await response.json().catch(() => ({}));
+           throw new Error(errorData.error?.message || 'API Quota Exceeded. Please wait a moment.');
+        }
+
+        const data = await response.json();
+        let code = (data.reply || data.text || '').trim();
+        code = code.replace(/```html/gi, '').replace(/```/gi, '').trim();
+
+        currentSandboxCode = code;
+        if (sandboxCodeTextarea) sandboxCodeTextarea.value = code;
+        if (sandboxIframe) sandboxIframe.srcdoc = code;
+
+        if (sandboxLoadingIndicator) sandboxLoadingIndicator.classList.add('hidden');
+        if (sandboxWorkspace) sandboxWorkspace.classList.remove('hidden');
+        showToast('Web app compiled & running successfully!', 'success');
+      } catch (err) {
+        console.error('Sandbox App Builder Error:', err);
+        if (sandboxLoadingIndicator) sandboxLoadingIndicator.classList.add('hidden');
+        if (sandboxPlaceholderBox) sandboxPlaceholderBox.classList.remove('hidden');
+        showToast('Error compiling applet. Please try again.', 'error');
+      }
+    });
+  }
+
+  if (sandboxTabBtns.length > 0) {
+    sandboxTabBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const tab = btn.getAttribute('data-tab');
+        sandboxTabBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        const previewPane = document.getElementById('sandbox-preview-pane');
+        const codePane = document.getElementById('sandbox-code-pane');
+
+        if (tab === 'preview') {
+          if (sandboxIframe) sandboxIframe.classList.remove('hidden');
+          if (previewPane) previewPane.classList.remove('hidden');
+          if (codePane) codePane.classList.add('hidden');
+          if (sandboxCodeTextarea && sandboxIframe) {
+            sandboxIframe.srcdoc = sandboxCodeTextarea.value;
+          }
+        } else {
+          if (previewPane) previewPane.classList.add('hidden');
+          if (codePane) codePane.classList.remove('hidden');
+          if (sandboxCodeTextarea) sandboxCodeTextarea.removeAttribute('readonly');
+        }
+      });
+    });
+  }
+
+  if (btnDownloadAppHtml) {
+    btnDownloadAppHtml.addEventListener('click', () => {
+      const finalCode = sandboxCodeTextarea ? sandboxCodeTextarea.value : currentSandboxCode;
+      if (!finalCode) return;
+      triggerFileDownload(finalCode, 'questora-generated-app.html', 'text/html');
     });
   }
 

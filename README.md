@@ -32,6 +32,10 @@
   - Voice input with live speech recognition dictation.
   - Natural audio playback for synthesis results and answer summaries.
 
+- **💻 AI App Builder Sandbox**
+  - Generates self-contained interactive web applications with HTML5, CSS3, and JavaScript on demand.
+  - Live interactive execution environment with real-time iframe preview, editable source code inspector, and one-click HTML download.
+
 - **🔐 Local User Authentication & State Persistence**
   - Secure signup and login with hashed passwords (`bcryptjs`).
   - Search history logs, bookmarks collection, and user preferences (theme, default AI model).
