@@ -690,8 +690,7 @@ app.delete('/api/bookmarks/:id', authenticate(true), (req: Request, res: Respons
 async function startServer() {
   const isProduction =
     process.env.NODE_ENV === 'production' ||
-    __dirname.endsWith('dist') ||
-    __dirname.includes(`${path.sep}dist`);
+    (typeof process.argv[1] === 'string' && process.argv[1].includes('dist'));
 
   if (!isProduction) {
     const { createServer: createViteServer } = await import('vite');
