@@ -6,12 +6,11 @@ import express, { Request, Response, NextFunction } from 'express';
 import path from 'path';
 import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
-import { createServer as createViteServer } from 'vite';
 import { db, User } from './server/db.js';
 import { executeGeminiSearch, executeOpenAISearch, getOpenAiStatus, executeTranslate, executeAIChat } from './server/ai.js';
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 
 // Middleware for parsing JSON with generous payload limits for documents/images
 app.use(express.json({ limit: '50mb' }));
@@ -689,14 +688,20 @@ app.delete('/api/bookmarks/:id', authenticate(true), (req: Request, res: Respons
 // ---------------- Vite Middleware & Production Serving ----------------
 
 async function startServer() {
-  if (process.env.NODE_ENV !== 'production') {
+  const isProduction =
+    process.env.NODE_ENV === 'production' ||
+    __dirname.endsWith('dist') ||
+    __dirname.includes(`${path.sep}dist`);
+
+  if (!isProduction) {
+    const { createServer: createViteServer } = await import('vite');
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: 'spa',
     });
     app.use(vite.middlewares);
   } else {
-    const distPath = path.join(process.cwd(), 'dist');
+    const distPath = path.resolve(process.cwd(), 'dist');
     app.use(express.static(distPath));
     app.get('*', (req: Request, res: Response) => {
       res.sendFile(path.join(distPath, 'index.html'));
@@ -704,7 +709,7 @@ async function startServer() {
   }
 
   app.listen(PORT, '0.0.0.0', () => {
-    console.log(`AI Search & Auth Server running at http://0.0.0.0:${PORT}`);
+    console.log(`Questora AI Server running at http://0.0.0.0:${PORT} [mode: ${isProduction ? 'production' : 'development'}]`);
   });
 }
 

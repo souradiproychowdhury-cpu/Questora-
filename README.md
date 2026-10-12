@@ -99,6 +99,23 @@ Open your browser at [http://localhost:3000](http://localhost:3000).
 
 ---
 
+## 🌐 Deploy to Render
+
+Deploying Questora on [Render](https://render.com) is easy:
+
+1. **Create a New Web Service** and connect your GitHub repository `https://github.com/souradiproychowdhury-cpu/Questora-`.
+2. Configure settings:
+   - **Environment**: `Node`
+   - **Build Command**: `npm install && npm run build`
+   - **Start Command**: `npm start`
+3. Add Environment Variables in the **Environment** tab:
+   - `GEMINI_API_KEY`: Your Gemini API key from [Google AI Studio](https://aistudio.google.com/)
+   - `NODE_ENV`: `production`
+   - `OPENAI_API_KEY` *(Optional)*: Your OpenAI key (if using OpenAI models)
+4. Click **Deploy Web Service**! Render will build the Vite frontend bundle, compile the backend server, bind automatically to Render's dynamic `$PORT`, and launch the app.
+
+---
+
 ## 📜 Available Scripts
 
 | Command | Description |
